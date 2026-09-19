@@ -39,7 +39,7 @@ The repair operation uses conservative heuristics. Always review generated outpu
 Replace the placeholder below with your deployed URL after publishing:
 
 ```text
-https://your-domain.example
+https://devilking7x.github.io/json-repair-studio/
 ```
 
 ## Tech stack
@@ -64,7 +64,7 @@ https://your-domain.example
 ### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/json-repair-studio.git
+git clone https://github.com/devilking7x/json-repair-studio.git
 cd json-repair-studio
 pnpm install
 ```

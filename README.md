@@ -168,3 +168,8 @@ The release workflow is intentionally reproducible. Run `pnpm install --frozen-l
 ## Limitations
 
 This is a focused open-source MVP rather than a hosted replacement for a production system. It does not guarantee business, legal, financial, medical, accessibility, or security compliance by itself. Validate outputs against the context in which you plan to use them.
+
+
+## Live demo
+
+Open **[JSON Repair Studio in the browser](https://devilking7x.github.io/json-repair-studio/)**. The default deployment uses GitHub Pages and does not require a custom domain.

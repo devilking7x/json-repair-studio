@@ -22,6 +22,8 @@ JSON errors are often small but time-consuming to find. A trailing comma, an unq
 - **Validate** JSON and show the approximate line and column of parsing errors.
 - **Copy** formatted output to the clipboard.
 - **Download** cleaned JSON as a `.json` file.
+- **Open JSON files** locally with a file picker; selected files are read in memory and never uploaded.
+- **Compare** the original input with generated output using leaf-level changed, added, removed, and unchanged path counts.
 - **Keyboard shortcuts** for fast workflows:
   - `Cmd/Ctrl + Enter` — repair JSON
   - `Cmd/Ctrl + Shift + F` — format JSON

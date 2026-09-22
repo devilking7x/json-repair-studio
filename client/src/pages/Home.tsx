@@ -8,6 +8,7 @@ import {
   Copy,
   Download,
   FileJson,
+  FileDiff,
   Github,
   Hash,
   Info,
@@ -17,11 +18,12 @@ import {
   RotateCcw,
   ShieldCheck,
   Sparkles,
+  Upload,
   WandSparkles,
   X,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type Action = "format" | "repair" | "minify" | "validate";
 type ResultState = "idle" | "valid" | "error" | "repaired";
@@ -83,6 +85,33 @@ const parseJson = (source: string) => {
   }
 };
 
+type CompareSummary = { changed: number; added: number; removed: number; shared: number };
+
+const flattenJson = (value: unknown, path = "$", result = new Map<string, string>()) => {
+  if (value !== null && typeof value === "object") {
+    Object.entries(value as Record<string, unknown>).forEach(([key, child]) => flattenJson(child, `${path}.${key}`, result));
+  } else {
+    result.set(path, JSON.stringify(value));
+  }
+  return result;
+};
+
+const compareJson = (left: unknown, right: unknown): CompareSummary => {
+  const before = flattenJson(left);
+  const after = flattenJson(right);
+  let changed = 0;
+  let added = 0;
+  let removed = 0;
+  let shared = 0;
+  new Set([...Array.from(before.keys()), ...Array.from(after.keys())]).forEach((path) => {
+    if (!before.has(path)) added += 1;
+    else if (!after.has(path)) removed += 1;
+    else if (before.get(path) !== after.get(path)) changed += 1;
+    else shared += 1;
+  });
+  return { changed, added, removed, shared };
+};
+
 function LineNumbers({ text }: { text: string }) {
   const lines = Math.max(1, text.split("\n").length);
   return (
@@ -129,6 +158,9 @@ export default function Home() {
   const [error, setError] = useState<{ message: string; line: number; column: number } | null>(null);
   const [indent, setIndent] = useState("2");
   const [history, setHistory] = useState<string[]>([]);
+  const [fileName, setFileName] = useState("");
+  const [compareSummary, setCompareSummary] = useState<CompareSummary | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const stats = useMemo(() => {
     const bytes = new TextEncoder().encode(input).length;
@@ -208,9 +240,46 @@ export default function Home() {
     toast.success("JSON downloaded");
   };
 
+  const importFile = (file?: File) => {
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".json")) {
+      toast.error("Choose a .json file");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setInput(String(reader.result ?? ""));
+      setFileName(file.name);
+      setOutput("");
+      setCompareSummary(null);
+      setResultState("idle");
+      setError(null);
+      toast.success("JSON file loaded", { description: "The file stayed in your browser." });
+    };
+    reader.onerror = () => toast.error("Could not read that file");
+    reader.readAsText(file);
+  };
+
+  const compareOutput = () => {
+    if (!output) {
+      toast.error("Run an action before comparing");
+      return;
+    }
+    const before = parseJson(input);
+    const after = parseJson(output);
+    if (before.error || after.error) {
+      toast.error("Both sides need valid JSON before comparison");
+      return;
+    }
+    setCompareSummary(compareJson(before.value, after.value));
+    toast.success("Comparison ready", { description: "Leaf-level changes were calculated locally." });
+  };
+
   const reset = () => {
     setInput("");
     setOutput("");
+    setFileName("");
+    setCompareSummary(null);
     setError(null);
     setResultState("idle");
     toast.success("Workspace cleared");
@@ -280,7 +349,9 @@ export default function Home() {
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">A focused workspace for cleaning, validating, and shaping JSON without sending sensitive data to a server.</p>
             </div>
             <div className="flex items-center gap-2 self-start xl:self-auto">
-              <button className="btn-ghost" onClick={() => setInput(SAMPLE_JSON)} type="button"><FileJson size={15} /> Load sample</button>
+              <button className="btn-ghost" onClick={() => fileInputRef.current?.click()} type="button"><Upload size={15} /> Open JSON</button>
+              <input ref={fileInputRef} accept=".json,application/json" className="hidden" onChange={(event) => importFile(event.target.files?.[0])} type="file" />
+              <button className="btn-ghost" onClick={() => { setInput(SAMPLE_JSON); setFileName(""); }} type="button"><FileJson size={15} /> Load sample</button>
               <button className="btn-ghost" onClick={reset} type="button"><RotateCcw size={15} /> Clear</button>
             </div>
           </div>
@@ -304,7 +375,7 @@ export default function Home() {
             <div className="flex min-h-[500px] min-w-0 flex-col border-b border-white/[0.08] xl:border-b-0 xl:border-r">
               <div className="flex h-12 items-center justify-between border-b border-white/[0.07] px-4">
                 <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-amber-300" /><span className="text-xs font-semibold text-slate-300">Input</span><span className="rounded bg-white/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-slate-600">JSON</span></div>
-                <span className="text-[11px] text-slate-600">{stats.lines} lines · {stats.bytes} bytes</span>
+                <span className="text-[11px] text-slate-600">{fileName || `${stats.lines} lines · ${stats.bytes} bytes`}</span>
               </div>
               <div className="flex flex-1 overflow-auto">
                 <LineNumbers text={input} />
@@ -335,8 +406,16 @@ export default function Home() {
 
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-[11px] leading-5 text-slate-600">Repair fixes trailing commas, smart quotes, code fences, and unquoted keys. Always review generated output.</p>
-            <button className="btn-primary" onClick={() => run()} type="button"><Play size={15} fill="currentColor" /> Run {action}</button>
+            <div className="flex items-center gap-2">
+              <button className="btn-ghost" onClick={compareOutput} type="button"><FileDiff size={15} /> Compare</button>
+              <button className="btn-primary" onClick={() => run()} type="button"><Play size={15} fill="currentColor" /> Run {action}</button>
+            </div>
           </div>
+
+          {compareSummary && <div className="mt-5 rounded-2xl border border-mint/15 bg-mint/[0.04] p-4" role="status">
+            <div className="mb-3 flex items-center justify-between gap-3"><div><h2 className="text-sm font-semibold text-white">Local structure comparison</h2><p className="mt-1 text-[11px] text-slate-500">Leaf-level paths compared between your input and generated output.</p></div><FileDiff className="text-mint" size={18} /></div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4"><div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><strong className="block text-lg text-amber-200">{compareSummary.changed}</strong><span className="text-[10px] text-slate-500">Changed</span></div><div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><strong className="block text-lg text-mint">{compareSummary.added}</strong><span className="text-[10px] text-slate-500">Added</span></div><div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><strong className="block text-lg text-rose-300">{compareSummary.removed}</strong><span className="text-[10px] text-slate-500">Removed</span></div><div className="rounded-xl border border-white/[0.07] bg-white/[0.025] p-3"><strong className="block text-lg text-slate-200">{compareSummary.shared}</strong><span className="text-[10px] text-slate-500">Unchanged</span></div></div>
+          </div>}
 
           <div className="mt-16 grid gap-4 border-t border-white/[0.07] pt-8 sm:grid-cols-3" id="how-it-works">
             <div className="feature-note"><div className="feature-icon"><WandSparkles size={16} /></div><div><h2>Repair gently</h2><p>Only common, reversible cleanup rules are applied.</p></div></div>

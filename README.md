@@ -1,5 +1,7 @@
 # JSON Repair Studio
 
+[![Live demo](https://devilking7x.github.io/json-repair-studio/badge.svg)](https://devilking7x.github.io/json-repair-studio/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 > A privacy-first JSON formatter, validator, minifier, and repair tool that runs entirely in your browser.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-8ef0c1.svg)](LICENSE)
@@ -150,3 +152,19 @@ JSON Repair Studio is available under the [MIT License](LICENSE).
 ## Acknowledgements
 
 This project uses the open-source React, Vite, TypeScript, Tailwind CSS, Lucide, and shadcn/ui ecosystems. See the project dependency manifests for the complete list of third-party packages and their licenses.
+
+## Who it is for
+
+This project is designed for **developers handling malformed payloads**. Its narrow first release focuses on helping them format, repair, validate, minify JSON locally. The interface uses realistic synthetic fixtures so the value is understandable without connecting a production account.
+
+## Privacy and safety
+
+The default experience is local-first: inputs are processed in the browser or in the user's own development environment, with no required account, API key, payment flow, or remote storage. Fixtures contain synthetic data only. Review a fork's hosting and analytics configuration before using it with sensitive information.
+
+## Validation
+
+The release workflow is intentionally reproducible. Run `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm build` before submitting a change. Manual review should cover keyboard operation, visible focus, mobile layout, empty states, and both successful and error paths.
+
+## Limitations
+
+This is a focused open-source MVP rather than a hosted replacement for a production system. It does not guarantee business, legal, financial, medical, accessibility, or security compliance by itself. Validate outputs against the context in which you plan to use them.

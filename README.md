@@ -4,10 +4,6 @@
 
 > A privacy-first JSON formatter, validator, minifier, and repair tool that runs entirely in your browser.
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-8ef0c1.svg)](LICENSE)
-[![Built with React](https://img.shields.io/badge/Built%20with-React%2019-61dafb.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg)](https://www.typescriptlang.org/)
-
 JSON Repair Studio helps developers clean up malformed JSON without uploading sensitive data to a server. Paste JSON into the editor, choose an action, review the result, and copy or download the cleaned output.
 
 ## Why this project exists
@@ -37,14 +33,6 @@ All parsing and repair operations happen in the browser. This project does not i
 You should still review the code and your deployment configuration before using the tool with highly sensitive data. Browser extensions, hosting infrastructure, analytics configuration, or modified forks may change the privacy characteristics of a deployment.
 
 The repair operation uses conservative heuristics. Always review generated output before using it in production, especially when the input contains nested strings, unusual escaping, or domain-specific syntax.
-
-## Demo
-
-Replace the placeholder below with your deployed URL after publishing:
-
-```text
-https://devilking7x.github.io/json-repair-studio/
-```
 
 ## Tech stack
 

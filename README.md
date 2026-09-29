@@ -1,6 +1,6 @@
 # JSON Repair Studio
 
-[![Live demo](https://devilking7x.github.io/json-repair-studio/badge.svg)](https://devilking7x.github.io/json-repair-studio/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Live demo](https://img.shields.io/badge/Live%20demo-GitHub%20Pages-gold.svg)](https://devilking7x.github.io/json-repair-studio/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > A privacy-first JSON formatter, validator, minifier, and repair tool that runs entirely in your browser.
 
